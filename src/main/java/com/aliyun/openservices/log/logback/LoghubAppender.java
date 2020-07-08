@@ -54,7 +54,7 @@ public class LoghubAppender<E> extends UnsynchronizedAppenderBase<E> {
     protected String source = ""; //
 
     protected String timeZone = "UTC";
-    protected String timeFormat = "yyyy-MM-dd'T'HH:mmZ";
+    protected String timeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     protected DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timeFormat).withZone(ZoneId.of(timeZone));
     private String mdcFields;
 
@@ -123,6 +123,7 @@ public class LoghubAppender<E> extends UnsynchronizedAppenderBase<E> {
         item.SetTime((int) (event.getTimeStamp() / 1000));
 
         Instant instant = Instant.ofEpochMilli(event.getTimeStamp());
+        item.PushBack("timestamp", String.valueOf(instant.getEpochSecond()));
         item.PushBack("time", formatter.format(instant));
 
         item.PushBack("level", event.getLevel().toString());
@@ -132,6 +133,8 @@ public class LoghubAppender<E> extends UnsynchronizedAppenderBase<E> {
         if (caller != null && caller.length > 0) {
             item.PushBack("location", caller[0].toString());
         }
+
+        item.PushBack("logger", event.getLoggerName());
 
         String message = event.getFormattedMessage();
         item.PushBack("message", message);
